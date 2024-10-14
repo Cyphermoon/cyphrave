@@ -9,8 +9,8 @@ const { current, rowIndex, colIndex } = defineProps({
 </script>
 
 <template>
-    <button @click="$emit('toggleCell', rowIndex, colIndex)" :class="{ active, current }">
-    </button>
+    <input type="checkbox" class="checkbox" @click="$emit('toggleCell', rowIndex, colIndex)"
+        :class="{ active, current }" />
 </template>
 
 

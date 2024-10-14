@@ -4,10 +4,10 @@ import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
 import DrumCell from './DrumCell.vue';
 
 const soundMap = {
-    brassHit: '/audio/brasshit.wav',
+    brass_hit: '/audio/brasshit.wav',
     baseline: 'https://cdn.freesound.org/previews/135/135418_2415245-lq.mp3',
-    hitHat: 'https://cdn.freesound.org/previews/38/38404_382028-lq.mp3',
-    kickdrum: '/audio/kickdrum.wav'
+    hit_hat: 'https://cdn.freesound.org/previews/38/38404_382028-lq.mp3',
+    kick_drum: '/audio/kickdrum.wav'
 };
 
 const { row, col } = { row: 4, col: 10 }
@@ -82,7 +82,7 @@ onUnmounted(() => {
         <section class="flex">
             <div class="flex flex-col space-y-3">
                 <span v-for="(sound, soundIndex) in sounds" :key="soundIndex">
-                    {{ sound }}
+                    {{ sound.replace("_", " ").toLowerCase() }}
                 </span>
             </div>
 
@@ -97,7 +97,7 @@ onUnmounted(() => {
 
         <div class="controls">
             <button @click="togglePlay">{{ isPlaying ? 'Stop' : 'Play' }}</button>
-            <input type="range" v-model="tempo" min="60" max="240" />
+            <input class="range range-primary" type="range" v-model="tempo" min="60" max="240" />
             <span>{{ tempo }} BPM</span>
         </div>
     </div>
