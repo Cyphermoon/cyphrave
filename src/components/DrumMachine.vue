@@ -2,6 +2,7 @@
 import { useAudioService } from '@/useAudioService';
 import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
 import DrumCell from './DrumCell.vue';
+import DrumControl from './DrumControl.vue';
 
 const soundMap = {
     brass_hit: '/audio/brasshit.wav',
@@ -76,63 +77,31 @@ onUnmounted(() => {
 </script>
 
 
-<!-- DrumMachine.vue -->
 <template>
-    <div class="drum-machine">
-        <section class="flex">
-            <div class="flex flex-col space-y-3">
-                <span v-for="(sound, soundIndex) in sounds" :key="soundIndex">
-                    {{ sound.replace("_", " ").toLowerCase() }}
-                </span>
+    <div class="bg-[#db6724]/60 backdrop-blur-md rounded-xl border border-white/20 shadow-lg p-2.5">
+        <DrumControl v-model="tempo" @togglePlay="togglePlay" :isPlaying="isPlaying" />
+        <section class="flex relative">
+            <div class="flex flex-col absolute -left-20">
+                <div class="w-full h-12 mb-3.5 flex flex-col justify-center" v-for="(sound, soundIndex) in sounds"
+                    :key="soundIndex">
+                    <button class="btn-sm transform duration-300 hover:scale-95 bg-[#db6724]/60 rounded-lg px-10">
+                        {{ sound.replace("_", " ").toLowerCase() }}
+                    </button>
+                </div>
             </div>
 
-            <div>
-                <div v-for="(row, rowIndex) in grid" :key="rowIndex" class="row">
+
+            <div class="ml-20">
+                <div v-for="(row, rowIndex) in grid" :key="rowIndex" class="row space-x-2 mb-2">
                     <DrumCell v-for="(cell, colIndex) in row" :key="colIndex" :active="cell"
                         :current="colIndex === currentBeat" :colIndex="colIndex" :rowIndex="rowIndex"
                         @toggleCell="toggleCell(rowIndex, colIndex)" />
                 </div>
             </div>
         </section>
-
-        <div class="controls">
-            <button @click="togglePlay">{{ isPlaying ? 'Stop' : 'Play' }}</button>
-            <input class="range range-primary" type="range" v-model="tempo" min="60" max="240" />
-            <span>{{ tempo }} BPM</span>
-        </div>
     </div>
 </template>
 
 
 
-<style scoped>
-.drum-machine {
-    display: flex;
-    flex-direction: column;
-}
-
-.row {
-    display: flex;
-}
-
-button {
-    width: 30px;
-    height: 30px;
-    margin: 2px;
-    background-color: #ddd;
-    border: none;
-    cursor: pointer;
-}
-
-button.active {
-    background-color: #4CAF50;
-}
-
-button.current {
-    border: 2px solid #1976D2;
-}
-
-.controls {
-    margin-top: 20px;
-}
-</style>
+<style scoped></style>
