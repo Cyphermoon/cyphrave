@@ -1,19 +1,39 @@
 <script setup>
 import { ref, watch } from 'vue';
 import DrumMachine from './components/DrumMachine.vue';
-import { fetchData } from './useFreeSoundService';
+import { fetchData, sanitizeBeatName } from './util';
 import BeatItem from './BeatItem.vue';
 
+const soundMap = ref({
+  brass_hit: new Audio('/audio/brasshit.wav',),
+  baseline: new Audio('https://cdn.freesound.org/previews/135/135418_2415245-lq.mp3'),
+  hit_hat: new Audio('https://cdn.freesound.org/previews/38/38404_382028-lq.mp3'),
+  kick_drum: new Audio('/audio/kickdrum.wav')
+})
 const beats = ref({})
 const query = ref("piano")
+
+const apiKey = import.meta.env["VITE_FREE_SOUND_API_KEY"]
 let timeout = null
+
+
+async function addBeat(id, name) {
+  name = sanitizeBeatName(name)
+  if (!soundMap.value[name]) {
+    const beatUrl = `https://freesound.org/apiv2/sounds/${id}/?fields=previews&token=${apiKey}`
+    const res = await fetchData(beatUrl)
+    soundMap.value[name] = new Audio(res.previews["preview-hq-mp3"])
+  } else {
+    console.log("Beat already exists")
+  }
+
+}
 
 // request for data on first load and after the search query changes
 watch(query, async (newQuery) => {
   if (newQuery.trim() === "") return
   clearTimeout(timeout)
 
-  const apiKey = import.meta.env["VITE_FREE_SOUND_API_KEY"]
   const soundUrl = `https://freesound.org/apiv2/search/text/?query=${query.value}&token=${apiKey}`
 
   // Debounce fetch function after the first try
@@ -26,10 +46,6 @@ watch(query, async (newQuery) => {
   }
 
 }, { immediate: true })
-
-watch(beats, (newSounds) => {
-  console.log("Sounds", newSounds)
-})
 
 </script>
 
@@ -48,7 +64,7 @@ watch(beats, (newSounds) => {
 
 
     <section class="mb-20">
-      <DrumMachine />
+      <DrumMachine :soundMap="soundMap" />
     </section>
 
 
@@ -57,7 +73,8 @@ watch(beats, (newSounds) => {
         class="input input-bordered text-gray-600 w-full max-w-xs" />
 
       <div class="grid grid-cols-4 gap-2.5">
-        <BeatItem v-for="beat in beats.results.slice(0, 10)" :key="beat.id" :name="beat.name" />
+        <BeatItem v-for="beat in beats.results.slice(0, 10)" :key="beat.id" :name="beat.name" :id="beat.id"
+          @addBeat="addBeat" />
       </div>
     </section>
 

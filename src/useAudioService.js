@@ -1,24 +1,19 @@
 // useAudioService.js
-import { ref } from 'vue';
 
-export function useAudioService() {
-    const sounds = ref({});
+export function useAudioService(sounds) {
 
-    const loadSound = (soundMap) => {
-        for (let key in soundMap) {
-            sounds.value[key] = new Audio(soundMap[key])
-        }
-    };
+
 
     const playSound = (name) => {
-        if (sounds.value[name]) {
-            sounds.value[name].currentTime = 0; // Reset to start
-            sounds.value[name].play();
+        console.log('playSound', name);
+        console.log('sounds', sounds);
+        if (sounds[name]) {
+            sounds[name].currentTime = 0; // Reset to start
+            sounds[name].play();
         }
     };
 
     return {
-        loadSound,
         playSound,
     };
 }
