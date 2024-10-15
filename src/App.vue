@@ -19,14 +19,21 @@ let timeout = null
 
 async function addBeat(id, name) {
   name = sanitizeBeatName(name)
+
   if (!soundMap.value[name]) {
     const beatUrl = `https://freesound.org/apiv2/sounds/${id}/?fields=previews&token=${apiKey}`
     const res = await fetchData(beatUrl)
     soundMap.value[name] = new Audio(res.previews["preview-hq-mp3"])
+
   } else {
     console.log("Beat already exists")
   }
 
+}
+
+function deleteBeat(name) {
+  console.log("Deleting beat", name)
+  delete soundMap.value[name]
 }
 
 // request for data on first load and after the search query changes
@@ -37,13 +44,10 @@ watch(query, async (newQuery) => {
   const soundUrl = `https://freesound.org/apiv2/search/text/?query=${query.value}&token=${apiKey}`
 
   // Debounce fetch function after the first try
-  if (timeout != null) {
-    timeout = setTimeout(async () => {
-      beats.value = await fetchData(soundUrl)
-    })
-  } else {
+
+  timeout = setTimeout(async () => {
     beats.value = await fetchData(soundUrl)
-  }
+  }, 2000)
 
 }, { immediate: true })
 
@@ -56,15 +60,15 @@ watch(query, async (newQuery) => {
     <!-- UI Elements -->
     <div class="shape w-32 h-32 top-10 left-10"></div>
     <div class="shape w-32 h-32 top-10 right-[20%]"></div>
-    <img class="fixed w-[400px] h-[400px] top-[50%] -translate-y-1/2 left-20"
+    <img class="absolute w-[400px] h-[400px] top-[50%] -translate-y-1/2 left-20"
       src='https://i.postimg.cc/6yQ8s1gC/home-tree1.png left-0' alt='home-tree1' />
 
-    <img class="fixed w-[400px] h-[400px] top-[35%] right-28" src="https://i.postimg.cc/TwdHzj3f/home-tree2.png"
+    <img class="absolute w-[400px] h-[400px] top-[35%] right-28" src="https://i.postimg.cc/TwdHzj3f/home-tree2.png"
       alt='home-tree2'>
 
 
     <section class="mb-20">
-      <DrumMachine :soundMap="soundMap" />
+      <DrumMachine :soundMap="soundMap" @deleteBeat="deleteBeat" />
     </section>
 
 
@@ -73,8 +77,7 @@ watch(query, async (newQuery) => {
         class="input input-bordered text-gray-600 w-full max-w-xs" />
 
       <div class="grid grid-cols-4 gap-2.5">
-        <BeatItem v-for="beat in beats.results.slice(0, 10)" :key="beat.id" :name="beat.name" :id="beat.id"
-          @addBeat="addBeat" />
+        <BeatItem v-for="beat in beats.results" :key="beat.id" :name="beat.name" :id="beat.id" @addBeat="addBeat" />
       </div>
     </section>
 

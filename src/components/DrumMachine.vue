@@ -17,14 +17,18 @@ const currentBeat = ref(0);
 
 // create an array of sounds
 const sounds = computed(() => Object.keys(soundMap))
-const col = 10
-const grid = ref(generateGrid(sounds.value.length, col))
+const col = ref(10)
+const grid = ref(generateGrid(sounds.value.length, col.value))
 
 let intervalId = null;
 
-// Change the grid when the sounds array changes
+
 watch(sounds, () => {
-    grid.value = generateGrid(sounds.value.length, col)
+    grid.value = generateGrid(sounds.value.length, col.value)
+});
+
+watch(col, (newCol) => {
+    grid.value = generateGrid(sounds.value.length, newCol)
 });
 
 const toggleCell = (row, col) => {
@@ -41,7 +45,7 @@ const playBeat = () => {
             audioService.playSound(sounds.value[i]);
         }
     }
-    currentBeat.value = (currentBeat.value + 1) % col;
+    currentBeat.value = (currentBeat.value + 1) % col.value;
 };
 
 const play = () => {
@@ -80,25 +84,29 @@ onUnmounted(() => {
 
 <template>
     <div class="bg-[#db6724]/60 backdrop-blur-md rounded-xl border border-white/20 shadow-lg p-2.5">
-        <DrumControl v-model="tempo" @togglePlay="togglePlay" :isPlaying="isPlaying" />
+        <DrumControl v-model:tempo="tempo" v-model:col="col" @togglePlay="togglePlay" :isPlaying="isPlaying" />
         <section class="flex relative">
             <div class="flex flex-col absolute -left-20">
-                <div class="w-[150px] min-h-12 mb-3.5 flex flex-col justify-center"
-                    v-for="(sound, soundIndex) in sounds" :key="soundIndex">
+                <div class="w-[150px] min-h-12 mb-3.5 flex flex-row relative cursor-pointer"
+                    v-for="(sound, soundIndex) in sounds" :key="soundIndex" @click="$emit('deleteBeat', sound)">
                     <button
-                        class="btn-sm whitespace-nowrap text-center px-0 w-full transform duration-300 hover:scale-95 bg-[#db6724]/60 rounded-lg">
-                        {{ truncateText(sanitizeBeatName(sound, false), 15) }}
+                        class="btn-sm whitespace-nowrap text-center px-0 w-full transform duration-300 hover:scale-95 bg-[#db6724]/60 rounded-lg flex items-center justify-evenly">
+                        <span class="text-black text-xl">&times;</span>
+                        <span class="">{{ truncateText(sanitizeBeatName(sound, false), 15) }}</span>
                     </button>
                 </div>
             </div>
 
 
-            <div class="ml-20">
+            <div v-if="grid.length > 0" class="ml-20">
                 <div v-for="(row, rowIndex) in grid" :key="rowIndex" class="row space-x-2 mb-2">
                     <DrumCell v-for="(cell, colIndex) in row" :key="colIndex" :active="cell"
                         :current="colIndex === currentBeat" :colIndex="colIndex" :rowIndex="rowIndex"
                         @toggleCell="toggleCell(rowIndex, colIndex)" />
                 </div>
+            </div>
+            <div v-else>
+                <p>Please add some beats to start mixing</p>
             </div>
         </section>
     </div>
