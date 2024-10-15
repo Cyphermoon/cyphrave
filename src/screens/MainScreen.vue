@@ -6,7 +6,7 @@ import GameCard from '@/components/GameCard.vue';
 <template>
     <div class="flex flex-col items-center">
         <div class="text-center mb-12 mt-8">
-            <h1 class="text-3xl font-bold">Welcome to the Game Hub</h1>
+            <h1 class="text-6xl font-bold text-[#db6724] ">Welcome to the Game Hub</h1>
             <p>Enjoy your games</p>
         </div>
 
