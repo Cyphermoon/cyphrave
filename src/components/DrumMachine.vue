@@ -1,14 +1,13 @@
 <script setup>
 import { useAudioService } from '@/useAudioService';
-import { sanitizeBeatName, truncateText } from '@/util';
 import { computed, onUnmounted, ref, watch } from 'vue';
-import DrumCell from './DrumCell.vue';
+import DrumCellList from './DrumCellList.vue';
 import DrumControl from './DrumControl.vue';
+import SelectedBeats from './SelectedBeats.vue';
 
 const { soundMap } = defineProps({
     soundMap: Object
 })
-
 
 const audioService = useAudioService(soundMap);
 const isPlaying = ref(false);
@@ -22,7 +21,7 @@ const grid = ref(generateGrid(sounds.value.length, col.value))
 
 let intervalId = null;
 
-
+// update the grid when sounds or col change
 watch(sounds, () => {
     grid.value = generateGrid(sounds.value.length, col.value)
 });
@@ -43,6 +42,7 @@ const playBeat = () => {
     for (let i = 0; i < sounds.value.length; i++) {
         if (grid.value[i][currentBeat.value]) {
             audioService.playSound(sounds.value[i]);
+
         }
     }
     currentBeat.value = (currentBeat.value + 1) % col.value;
@@ -85,33 +85,19 @@ onUnmounted(() => {
 <template>
     <div class="bg-[#db6724]/60 backdrop-blur-md rounded-xl border border-white/20 shadow-lg p-2.5">
         <DrumControl v-model:tempo="tempo" v-model:col="col" @togglePlay="togglePlay" :isPlaying="isPlaying" />
+
         <section class="flex relative">
             <div class="flex flex-col absolute -left-20">
-                <div class="w-[150px] min-h-12 mb-3.5 flex flex-row relative cursor-pointer"
-                    v-for="(sound, soundIndex) in sounds" :key="soundIndex" @click="$emit('deleteBeat', sound)">
-                    <button
-                        class="btn-sm whitespace-nowrap text-center px-0 w-full transform duration-300 hover:scale-95 bg-[#db6724]/60 rounded-lg flex items-center justify-evenly">
-                        <span class="text-black text-xl">&times;</span>
-                        <span class="">{{ truncateText(sanitizeBeatName(sound, false), 15) }}</span>
-                    </button>
-                </div>
+                <SelectedBeats :sounds="sounds" @deleteBeat="(sound) => $emit('deleteBeat', sound)" />
             </div>
-
 
             <div v-if="grid.length > 0" class="ml-20">
-                <div v-for="(row, rowIndex) in grid" :key="rowIndex" class="row space-x-2 mb-2">
-                    <DrumCell v-for="(cell, colIndex) in row" :key="colIndex" :active="cell"
-                        :current="colIndex === currentBeat" :colIndex="colIndex" :rowIndex="rowIndex"
-                        @toggleCell="toggleCell(rowIndex, colIndex)" />
-                </div>
+                <DrumCellList :grid="grid" :currentBeat="currentBeat" @toggleCell="toggleCell" />
             </div>
+
             <div v-else>
                 <p>Please add some beats to start mixing</p>
             </div>
         </section>
     </div>
 </template>
-
-
-
-<style scoped></style>
